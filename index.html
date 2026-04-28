@@ -444,6 +444,9 @@
             <option value="">Selecione...</option>
             <option>Clínica Própria</option>
             <option>Franquia</option>
+            <option>Rede</option>
+            <option>Consultório</option>
+            <option>Hospital</option>
           </select>
         </div>
         <div class="field">
@@ -829,10 +832,30 @@ async function fetchCEP(cep) {
 function handleFile(input, wrapId, nameId) {
   if (input.files.length > 0) {
     const f = input.files[0];
+    const maxMB = 10;
+    if (f.size > maxMB * 1024 * 1024) {
+      showToast(`❌ Arquivo muito grande. Máximo ${maxMB}MB.`);
+      input.value = '';
+      return;
+    }
     document.getElementById(wrapId).classList.add('has-file');
     document.getElementById(nameId).textContent = '✓ ' + f.name;
     document.getElementById(wrapId).querySelector('.label').textContent = 'Arquivo selecionado';
   }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) { resolve(null); return; }
+    const reader = new FileReader();
+    reader.onload = () => resolve({
+      name: file.name,
+      type: file.type,
+      data: reader.result.split(',')[1]
+    });
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
  
 function v(id) { return (document.getElementById(id) || {}).value || ''; }
@@ -877,16 +900,22 @@ function buildSummary() {
   document.getElementById('summary-content').innerHTML = html;
 }
  
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyssus3IR8vLxhSXtwSo6PrnH9bSr54Hveqkje4hUHynWyc6zFKjzWxp6fPR4RRp3V6og/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydmeohUXdIPw3tg5_Q2I1eLzUljNl7bv8YL82gUz0TRgWTKx7XQZ5m_kwsxVkIPk8f7A/exec';
  
 async function submitForm() {
-  const fileNames = {
-    cro: document.getElementById('file_cro').files[0]?.name || '',
-    conta: document.getElementById('file_conta').files[0]?.name || '',
-    end: document.getElementById('file_end').files[0]?.name || '',
-    fachada: document.getElementById('file_fachada').files[0]?.name || '',
-  };
- 
+  document.getElementById('overlay').classList.add('show');
+  document.querySelector('.overlay-box p').textContent = 'Convertendo arquivos, aguarde...';
+
+  // Converter todos os arquivos para base64
+  const [fileCro, fileConta, fileEnd, fileFachada] = await Promise.all([
+    fileToBase64(document.getElementById('file_cro').files[0]),
+    fileToBase64(document.getElementById('file_conta').files[0]),
+    fileToBase64(document.getElementById('file_end').files[0]),
+    fileToBase64(document.getElementById('file_fachada').files[0]),
+  ]);
+
+  document.querySelector('.overlay-box p').textContent = 'Enviando dados e arquivos...';
+
   const payload = {
     'CNPJ': v('cnpj'),
     'Ag': v('agencia'),
@@ -919,16 +948,15 @@ async function submitForm() {
     'Tipo de conta banco': v('tipo_conta'),
     'Tipo de clínica': v('tipo_clinica'),
     'Rede': v('rede'),
-    'Arquivo - CRO do RT': fileNames.cro,
     'Nº do CRO': v('num_cro'),
     'Data emissão do CRO': v('data_cro'),
-    'Arquivo - Comprovante da conta corrente': fileNames.conta,
-    'Arquivo - Comprovante de endereço': fileNames.end,
-    'Arquivo - Fachada': fileNames.fachada,
     'Data de envio': new Date().toLocaleString('pt-BR'),
+    // Arquivos em base64
+    'file_cro': fileCro,
+    'file_conta': fileConta,
+    'file_end': fileEnd,
+    'file_fachada': fileFachada,
   };
- 
-  document.getElementById('overlay').classList.add('show');
  
   try {
     await fetch(APPS_SCRIPT_URL, {
