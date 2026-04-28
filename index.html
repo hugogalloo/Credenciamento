@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credenciamento de Clínica</title>
+ 
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+ 
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --surface2: #faf9f7;
+    --accent: #1a5c4a;
+    --accent2: #2d8a6e;
+    --accent-light: #e8f5f0;
+    --text: #1c1c1c;
+    --text-muted: #6b6b6b;
+    --border: #e0ddd8;
+    --border-focus: #1a5c4a;
+    --error: #c0392b;
+    --shadow: 0 2px 16px rgba(26,92,74,0.08);
+    --shadow-lg: 0 8px 40px rgba(26,92,74,0.14);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+ 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image: radial-gradient(circle at 20% 20%, rgba(26,92,74,0.04) 0%, transparent 60%),
+                      radial-gradient(circle at 80% 80%, rgba(45,138,110,0.04) 0%, transparent 60%);
+  }
+ 
+  header {
+    background: var(--accent);
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+  }
+ 
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+ 
+  header h1 {
+    font-family: 'Sora', sans-serif;
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+ 
+  header p {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.82rem;
+    margin-top: 2px;
+  }
+ 
+  .progress-bar {
+    background: rgba(255,255,255,0.15);
+    height: 3px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: white;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+ 
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+ 
+  .steps-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 36px;
+    background: var(--surface);
+    padding: 8px;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+ 
+  .step-btn {
+    flex: 1;
+    min-width: 90px;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .step-btn:hover { background: var(--accent-light); color: var(--accent); }
+  .step-btn.active { background: var(--accent); color: white; }
+  .step-btn.done { color: var(--accent2); }
+  .step-btn .step-num {
+    display: block;
+    font-size: 0.65rem;
+    opacity: 0.7;
+    margin-bottom: 2px;
+  }
+ 
+  .section { display: none; }
+  .section.active { display: block; }
+ 
+  .section-header {
+    margin-bottom: 28px;
+  }
+  .section-header h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .section-header p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+  }
+ 
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+ 
+  .card-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent2);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+ 
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+ 
+  .field { display: flex; flex-direction: column; gap: 6px; }
+ 
+  label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+  label .req { color: var(--error); margin-left: 2px; }
+ 
+  input, select, textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    outline: none;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--border-focus);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(26,92,74,0.08);
+  }
+  input.error, select.error { border-color: var(--error); }
+ 
+  .hint {
+    font-size: 0.73rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+ 
+  .file-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    position: relative;
+    gap: 8px;
+  }
+  .file-upload:hover {
+    border-color: var(--accent2);
+    background: var(--accent-light);
+  }
+  .file-upload input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+  .file-upload .icon { font-size: 28px; }
+  .file-upload .label { font-size: 0.82rem; font-weight: 500; color: var(--accent); }
+  .file-upload .sub { font-size: 0.73rem; color: var(--text-muted); }
+  .file-upload.has-file { border-color: var(--accent2); background: var(--accent-light); }
+  .file-name {
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin-top: 4px;
+    word-break: break-all;
+  }
+ 
+  .nav-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    justify-content: space-between;
+  }
+ 
+  .btn {
+    padding: 13px 28px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(26,92,74,0.25);
+  }
+  .btn-primary:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(26,92,74,0.3);
+  }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn-export {
+    background: #2563eb;
+    color: white;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+  }
+  .btn-export:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+  }
+ 
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+  }
+  .summary-table th {
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .summary-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .summary-table tr:last-child td { border-bottom: none; }
+  .summary-table td:first-child { color: var(--text-muted); font-size: 0.78rem; }
+ 
+  .toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    background: var(--accent);
+    color: white;
+    padding: 14px 22px;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 9999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+ 
+  .overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+  }
+  .overlay.show { display: flex; }
+  .overlay-box {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 48px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    max-width: 380px;
+  }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid var(--accent-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .overlay-box h3 { font-family: 'Sora', sans-serif; font-size: 1.1rem; color: var(--accent); margin-bottom: 8px; }
+  .overlay-box p { font-size: 0.84rem; color: var(--text-muted); }
+ 
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .success-screen.show { display: block; }
+  .success-icon { font-size: 64px; margin-bottom: 20px; }
+  .success-screen h2 { font-family: 'Sora', sans-serif; font-size: 1.8rem; color: var(--accent); margin-bottom: 12px; }
+  .success-screen p { color: var(--text-muted); font-size: 1rem; line-height: 1.6; }
+ 
+  @media (max-width: 640px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .span-2, .span-3 { grid-column: span 1; }
+    header { padding: 20px; }
+    .card { padding: 18px; }
+    .container { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+ 
+<header>
+  <div class="logo-icon">🦷</div>
+  <div style="flex:1">
+    <h1>Credenciamento de Clínica</h1>
+    <p>Preencha os dados abaixo para iniciar o processo de credenciamento</p>
+  </div>
+  <div style="text-align:right; color:rgba(255,255,255,0.6); font-size:0.78rem">
+    <div id="step-indicator">Etapa 1 de 6</div>
+  </div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+ 
+<div class="container">
+ 
+  <nav class="steps-nav">
+    <button class="step-btn active" onclick="goTo(0)"><span class="step-num">01</span>Clínica</button>
+    <button class="step-btn" onclick="goTo(1)"><span class="step-num">02</span>Endereço</button>
+    <button class="step-btn" onclick="goTo(2)"><span class="step-num">03</span>Responsável</button>
+    <button class="step-btn" onclick="goTo(3)"><span class="step-num">04</span>Banco</button>
+    <button class="step-btn" onclick="goTo(4)"><span class="step-num">05</span>Documentos</button>
+    <button class="step-btn" onclick="goTo(5)"><span class="step-num">06</span>Revisão</button>
+  </nav>
+ 
+  <!-- SECTION 1: Dados da Clínica -->
+  <div class="section active" id="sec-0">
+    <div class="section-header">
+      <h2>🏥 Dados da Clínica</h2>
+      <p>Informações gerais sobre a clínica a ser credenciada</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Identificação</div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>CNPJ <span class="req">*</span></label>
+          <input type="text" id="cnpj" placeholder="00.000.000/0000-00" oninput="maskCNPJ(this)" maxlength="18">
+        </div>
+        <div class="field">
+          <label>Razão Social <span class="req">*</span></label>
+          <input type="text" id="razao_social" placeholder="Razão social completa">
+        </div>
+        <div class="field">
+          <label>Nome da Clínica <span class="req">*</span></label>
+          <input type="text" id="nome_clinica" placeholder="Nome fantasia">
+        </div>
+        <div class="field">
+          <label>Unidade <span class="req">*</span></label>
+          <input type="text" id="unidade" placeholder="Ex: Centro, Norte, Zona Sul">
+        </div>
+        <div class="field">
+          <label>E-mail da Clínica <span class="req">*</span></label>
+          <input type="email" id="email_clinica" placeholder="contato@clinica.com.br">
+        </div>
+        <div class="field">
+          <label>Telefone da Clínica <span class="req">*</span></label>
+          <input type="text" id="telefone_clinica" placeholder="(00) 0000-0000" oninput="maskPhone(this)" maxlength="15">
+        </div>
+        <div class="field">
+          <label>Tipo de Clínica <span class="req">*</span></label>
+          <select id="tipo_clinica">
+            <option value="">Selecione...</option>
+            <option>Clínica Própria</option>
+            <option>Franquia</option>
+            <option>Rede</option>
+            <option>Consultório</option>
+            <option>Hospital</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Rede</label>
+          <input type="text" id="rede" placeholder="Nome da rede (se aplicável)">
+        </div>
+        <div class="field">
+          <label>Faturamento Médio Mensal <span class="req">*</span></label>
+          <select id="faturamento">
+            <option value="">Selecione a faixa...</option>
+            <option>Até R$ 30.000</option>
+            <option>R$ 30.001 a R$ 60.000</option>
+            <option>R$ 60.001 a R$ 100.000</option>
+            <option>R$ 100.001 a R$ 200.000</option>
+            <option>Acima de R$ 200.000</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <div></div>
+      <button class="btn btn-primary" onclick="nextStep()">Próximo <span>→</span></button>
+    </div>
+  </div>
+ 
+  <!-- SECTION 2: Endereço -->
+  <div class="section" id="sec-1">
+    <div class="section-header">
+      <h2>📍 Endereço da Clínica</h2>
+      <p>Localização completa da clínica</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📍 Localização</div>
+      <div class="grid grid-3">
+        <div class="field">
+          <label>CEP <span class="req">*</span></label>
+          <input type="text" id="cep" placeholder="00000-000" oninput="maskCEP(this)" maxlength="9" onblur="fetchCEP(this.value)">
+        </div>
+        <div class="field span-2">
+          <label>Logradouro <span class="req">*</span></label>
+          <input type="text" id="logradouro" placeholder="Rua, Avenida, etc.">
+        </div>
+        <div class="field">
+          <label>Número <span class="req">*</span></label>
+          <input type="text" id="numero" placeholder="123">
+        </div>
+        <div class="field">
+          <label>Complemento</label>
+          <input type="text" id="complemento" placeholder="Sala, andar, etc.">
+        </div>
+        <div class="field">
+          <label>Bairro <span class="req">*</span></label>
+          <input type="text" id="bairro" placeholder="Bairro">
+        </div>
+        <div class="field span-2">
+          <label>Cidade <span class="req">*</span></label>
+          <input type="text" id="cidade" placeholder="Cidade">
+        </div>
+        <div class="field">
+          <label>Estado (UF) <span class="req">*</span></label>
+          <select id="estado">
+            <option value="">UF</option>
+            <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+            <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+            <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+            <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+            <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+            <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+            <option>SP</option><option>SE</option><option>TO</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+      <button class="btn btn-primary" onclick="nextStep()">Próximo →</button>
+    </div>
+  </div>
+ 
+  <!-- SECTION 3: Responsável / Ponto Focal -->
+  <div class="section" id="sec-2">
+    <div class="section-header">
+      <h2>👤 Responsável & Ponto Focal</h2>
+      <p>Dados do responsável legal e do ponto focal de contato</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🔑 Responsável Legal</div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>Nome <span class="req">*</span></label>
+          <input type="text" id="nome_resp" placeholder="Nome">
+        </div>
+        <div class="field">
+          <label>Sobrenome <span class="req">*</span></label>
+          <input type="text" id="sobrenome_resp" placeholder="Sobrenome">
+        </div>
+        <div class="field">
+          <label>CPF <span class="req">*</span></label>
+          <input type="text" id="cpf_resp" placeholder="000.000.000-00" oninput="maskCPF(this)" maxlength="14">
+        </div>
+        <div class="field">
+          <label>E-mail <span class="req">*</span></label>
+          <input type="email" id="email_resp" placeholder="responsavel@email.com">
+        </div>
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">📞 Ponto Focal</div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>Nome <span class="req">*</span></label>
+          <input type="text" id="pf_nome" placeholder="Nome do ponto focal">
+        </div>
+        <div class="field">
+          <label>Cargo <span class="req">*</span></label>
+          <input type="text" id="pf_cargo" placeholder="Ex: Gerente, Recepcionista">
+        </div>
+        <div class="field">
+          <label>CPF <span class="req">*</span></label>
+          <input type="text" id="pf_cpf" placeholder="000.000.000-00" oninput="maskCPF(this)" maxlength="14">
+        </div>
+        <div class="field">
+          <label>Celular <span class="req">*</span></label>
+          <input type="text" id="pf_celular" placeholder="(00) 00000-0000" oninput="maskPhone(this)" maxlength="15">
+        </div>
+        <div class="field span-2">
+          <label>E-mail <span class="req">*</span></label>
+          <input type="email" id="pf_email" placeholder="pontofocal@clinica.com.br">
+        </div>
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">🦷 CRO do Responsável Técnico</div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>Nº do CRO <span class="req">*</span></label>
+          <input type="text" id="num_cro" placeholder="00000/UF">
+        </div>
+        <div class="field">
+          <label>Data de Emissão do CRO <span class="req">*</span></label>
+          <input type="date" id="data_cro">
+        </div>
+      </div>
+    </div>
+ 
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+      <button class="btn btn-primary" onclick="nextStep()">Próximo →</button>
+    </div>
+  </div>
+ 
+  <!-- SECTION 4: Dados Bancários -->
+  <div class="section" id="sec-3">
+    <div class="section-header">
+      <h2>🏦 Dados Bancários</h2>
+      <p>Conta para recebimento dos repasses</p>
+    </div>
+    <div class="card">
+      <div class="card-title">💳 Conta Bancária</div>
+      <div class="grid grid-3">
+        <div class="field">
+          <label>Banco <span class="req">*</span></label>
+          <select id="banco">
+            <option value="">Selecione...</option>
+            <option>001 - Banco do Brasil</option>
+            <option>033 - Santander</option>
+            <option>104 - Caixa Econômica Federal</option>
+            <option>237 - Bradesco</option>
+            <option>341 - Itaú</option>
+            <option>077 - Inter</option>
+            <option>212 - Banco Original</option>
+            <option>260 - Nu Pagamentos (Nubank)</option>
+            <option>336 - C6 Bank</option>
+            <option>756 - Sicoob</option>
+            <option>748 - Sicredi</option>
+            <option>422 - Safra</option>
+            <option>085 - Ailos</option>
+            <option>290 - PagBank</option>
+            <option>323 - MercadoPago</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Agência <span class="req">*</span></label>
+          <input type="text" id="agencia" placeholder="0000" maxlength="6">
+        </div>
+        <div class="field">
+          <label>Dígito da Agência</label>
+          <input type="text" id="digito_ag" placeholder="0" maxlength="2">
+        </div>
+        <div class="field span-2">
+          <label>Número da Conta <span class="req">*</span></label>
+          <input type="text" id="conta_num" placeholder="000000">
+        </div>
+        <div class="field">
+          <label>Dígito da Conta <span class="req">*</span></label>
+          <input type="text" id="conta_digito" placeholder="0" maxlength="2">
+        </div>
+        <div class="field span-3">
+          <label>Tipo de Conta <span class="req">*</span></label>
+          <select id="tipo_conta">
+            <option value="">Selecione...</option>
+            <option>Conta Corrente</option>
+            <option>Conta Poupança</option>
+            <option>Conta Pagamento</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+      <button class="btn btn-primary" onclick="nextStep()">Próximo →</button>
+    </div>
+  </div>
+ 
+  <!-- SECTION 5: Documentos -->
+  <div class="section" id="sec-4">
+    <div class="section-header">
+      <h2>📁 Documentos</h2>
+      <p>Envie os documentos necessários para o credenciamento</p>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">📄 Documentos Obrigatórios</div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>CRO do Responsável Técnico <span class="req">*</span></label>
+          <div class="file-upload" id="wrap-cro" onclick="this.querySelector('input').click()">
+            <div class="icon">📋</div>
+            <div class="label">Clique para enviar</div>
+            <div class="sub">PDF, JPG ou PNG • Máx. 10MB</div>
+            <input type="file" id="file_cro" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFile(this,'wrap-cro','name-cro')">
+          </div>
+          <div class="file-name" id="name-cro"></div>
+        </div>
+ 
+        <div class="field">
+          <label>Comprovante de Conta Corrente <span class="req">*</span></label>
+          <div class="file-upload" id="wrap-conta" onclick="this.querySelector('input').click()">
+            <div class="icon">🏦</div>
+            <div class="label">Clique para enviar</div>
+            <div class="sub">PDF, JPG ou PNG • Máx. 10MB</div>
+            <input type="file" id="file_conta" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFile(this,'wrap-conta','name-conta')">
+          </div>
+          <div class="file-name" id="name-conta"></div>
+        </div>
+ 
+        <div class="field">
+          <label>Comprovante de Endereço <span class="req">*</span></label>
+          <div class="file-upload" id="wrap-end" onclick="this.querySelector('input').click()">
+            <div class="icon">🏠</div>
+            <div class="label">Clique para enviar</div>
+            <div class="sub">PDF, JPG ou PNG • Máx. 10MB</div>
+            <input type="file" id="file_end" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFile(this,'wrap-end','name-end')">
+          </div>
+          <div class="file-name" id="name-end"></div>
+        </div>
+ 
+        <div class="field">
+          <label>Foto da Fachada <span class="req">*</span></label>
+          <div class="file-upload" id="wrap-fachada" onclick="this.querySelector('input').click()">
+            <div class="icon">📸</div>
+            <div class="label">Clique para enviar</div>
+            <div class="sub">JPG ou PNG • Máx. 10MB</div>
+            <input type="file" id="file_fachada" accept=".jpg,.jpeg,.png" onchange="handleFile(this,'wrap-fachada','name-fachada')">
+          </div>
+          <div class="file-name" id="name-fachada"></div>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="prevStep()">← Anterior</button>
+      <button class="btn btn-primary" onclick="nextStep()">Revisar →</button>
+    </div>
+  </div>
+ 
+  <!-- SECTION 6: Revisão -->
+  <div class="section" id="sec-5">
+    <div class="section-header">
+      <h2>✅ Revisão dos Dados</h2>
+      <p>Verifique todas as informações antes de enviar</p>
+    </div>
+ 
+    <div class="card" id="summary-card">
+      <div class="card-title">📊 Resumo do Cadastro</div>
+      <div id="summary-content"></div>
+    </div>
+ 
+    <div class="nav-btns">
+      <button class="btn btn-secondary" onclick="prevStep()">← Voltar</button>
+      <button class="btn btn-export" onclick="submitForm()">
+        ✅ Enviar Cadastro
+      </button>
+    </div>
+  </div>
+ 
+  <!-- Success Screen -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">🎉</div>
+    <h2>Cadastro enviado!</h2>
+    <p>Seus dados foram recebidos com sucesso.<br>Nossa equipe entrará em contato em breve para concluir o credenciamento.</p>
+  </div>
+ 
+</div>
+ 
+<!-- Loading Overlay -->
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <div class="spinner"></div>
+    <h3>Enviando cadastro...</h3>
+    <p>Aguarde, estamos registrando seus dados.</p>
+  </div>
+</div>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script>
+let currentStep = 0;
+const totalSteps = 6;
+ 
+function goTo(step) {
+  document.getElementById(`sec-${currentStep}`).classList.remove('active');
+  document.querySelectorAll('.step-btn')[currentStep].classList.remove('active');
+  currentStep = step;
+  document.getElementById(`sec-${currentStep}`).classList.add('active');
+  const btns = document.querySelectorAll('.step-btn');
+  btns.forEach((b, i) => { if (i < currentStep) b.classList.add('done'); else b.classList.remove('done'); });
+  btns[currentStep].classList.add('active');
+  document.getElementById('step-indicator').textContent = `Etapa ${currentStep + 1} de ${totalSteps}`;
+  document.getElementById('progress-fill').style.width = `${((currentStep + 1) / totalSteps) * 100}%`;
+  if (currentStep === 5) buildSummary();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+ 
+function nextStep() { if (currentStep < totalSteps - 1) goTo(currentStep + 1); }
+function prevStep() { if (currentStep > 0) goTo(currentStep - 1); }
+ 
+function maskCNPJ(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = v.replace(/(\d{2})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d)/,'$1/$2');
+  v = v.replace(/(\d{4})(\d)/,'$1-$2');
+  el.value = v.substring(0,18);
+}
+function maskCPF(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  el.value = v.substring(0,14);
+}
+function maskPhone(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length <= 10) v = v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
+  else v = v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+  el.value = v.substring(0,15).replace(/-$/,'');
+}
+function maskCEP(el) {
+  let v = el.value.replace(/\D/g,'');
+  v = v.replace(/(\d{5})(\d)/,'$1-$2');
+  el.value = v.substring(0,9);
+}
+ 
+async function fetchCEP(cep) {
+  const clean = cep.replace(/\D/g,'');
+  if (clean.length !== 8) return;
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+    const d = await r.json();
+    if (!d.erro) {
+      document.getElementById('logradouro').value = d.logradouro || '';
+      document.getElementById('bairro').value = d.bairro || '';
+      document.getElementById('cidade').value = d.localidade || '';
+      document.getElementById('estado').value = d.uf || '';
+    }
+  } catch(e) {}
+}
+ 
+function handleFile(input, wrapId, nameId) {
+  if (input.files.length > 0) {
+    const f = input.files[0];
+    document.getElementById(wrapId).classList.add('has-file');
+    document.getElementById(nameId).textContent = '✓ ' + f.name;
+    document.getElementById(wrapId).querySelector('.label').textContent = 'Arquivo selecionado';
+  }
+}
+ 
+function v(id) { return (document.getElementById(id) || {}).value || ''; }
+ 
+function buildSummary() {
+  const rows = [
+    ['CNPJ', v('cnpj')],
+    ['Razão Social', v('razao_social')],
+    ['Nome da Clínica', v('nome_clinica')],
+    ['Unidade', v('unidade')],
+    ['Tipo de Clínica', v('tipo_clinica')],
+    ['Rede', v('rede')],
+    ['E-mail', v('email_clinica')],
+    ['Telefone', v('telefone_clinica')],
+    ['Faturamento', v('faturamento')],
+    ['---', ''],
+    ['CEP', v('cep')],
+    ['Logradouro', v('logradouro') + ', ' + v('numero')],
+    ['Bairro', v('bairro')],
+    ['Cidade/UF', v('cidade') + ' - ' + v('estado')],
+    ['---', ''],
+    ['Responsável', v('nome_resp') + ' ' + v('sobrenome_resp')],
+    ['CPF Responsável', v('cpf_resp')],
+    ['E-mail Responsável', v('email_resp')],
+    ['CRO Nº', v('num_cro')],
+    ['---', ''],
+    ['Ponto Focal', v('pf_nome')],
+    ['Cargo', v('pf_cargo')],
+    ['Celular PF', v('pf_celular')],
+    ['---', ''],
+    ['Banco', v('banco')],
+    ['Agência', v('agencia') + (v('digito_ag') ? '-' + v('digito_ag') : '')],
+    ['Conta', v('conta_num') + '-' + v('conta_digito')],
+    ['Tipo de Conta', v('tipo_conta')],
+  ];
+  const html = `<table class="summary-table">
+    <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+    <tbody>
+      ${rows.filter(r => r[0] !== '---').map(r => `<tr><td>${r[0]}</td><td>${r[1] || '<em style="color:#bbb">Não preenchido</em>'}</td></tr>`).join('')}
+    </tbody>
+  </table>`;
+  document.getElementById('summary-content').innerHTML = html;
+}
+ 
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydmeohUXdIPw3tg5_Q2I1eLzUljNl7bv8YL82gUz0TRgWTKx7XQZ5m_kwsxVkIPk8f7A/exec';
+ 
+async function submitForm() {
+  const fileNames = {
+    cro: document.getElementById('file_cro').files[0]?.name || '',
+    conta: document.getElementById('file_conta').files[0]?.name || '',
+    end: document.getElementById('file_end').files[0]?.name || '',
+    fachada: document.getElementById('file_fachada').files[0]?.name || '',
+  };
+ 
+  const payload = {
+    'CNPJ': v('cnpj'),
+    'Ag': v('agencia'),
+    'Dígito ag': v('digito_ag'),
+    'Banco': v('banco'),
+    'Conta - Número': v('conta_num'),
+    'Conta digito': v('conta_digito'),
+    'Logradouro': v('logradouro'),
+    'Numero': v('numero'),
+    'Bairro': v('bairro'),
+    'Complemento': v('complemento'),
+    'CEP': v('cep'),
+    'Cidade': v('cidade'),
+    'Estado (UF)': v('estado'),
+    'Nome da clinica': v('nome_clinica'),
+    'Email da clinica': v('email_clinica'),
+    'Telefone da clinica': v('telefone_clinica'),
+    'Unidade (Ex: Centro)': v('unidade'),
+    'Razão social': v('razao_social'),
+    'Nome do responsavel': v('nome_resp'),
+    'Sobrenome do responsável': v('sobrenome_resp'),
+    'Email do responsavel': v('email_resp'),
+    'CPF do responsavel': v('cpf_resp'),
+    'Faturamento': v('faturamento'),
+    'Ponto focal - Cargo': v('pf_cargo'),
+    'Ponto focal - Celular': v('pf_celular'),
+    'Ponto focal - Cpf': v('pf_cpf'),
+    'Ponto focal - Email': v('pf_email'),
+    'Ponto focal - Nome': v('pf_nome'),
+    'Tipo de conta banco': v('tipo_conta'),
+    'Tipo de clínica': v('tipo_clinica'),
+    'Rede': v('rede'),
+    'Arquivo - CRO do RT': fileNames.cro,
+    'Nº do CRO': v('num_cro'),
+    'Data emissão do CRO': v('data_cro'),
+    'Arquivo - Comprovante da conta corrente': fileNames.conta,
+    'Arquivo - Comprovante de endereço': fileNames.end,
+    'Arquivo - Fachada': fileNames.fachada,
+    'Data de envio': new Date().toLocaleString('pt-BR'),
+  };
+ 
+  document.getElementById('overlay').classList.add('show');
+ 
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+ 
+    document.getElementById('overlay').classList.remove('show');
+    document.querySelector('.steps-nav').style.display = 'none';
+    document.getElementById('sec-5').classList.remove('active');
+    document.getElementById('success-screen').classList.add('show');
+    document.querySelector('header p').textContent = 'Cadastro concluído com sucesso';
+ 
+  } catch(err) {
+    document.getElementById('overlay').classList.remove('show');
+    showToast('❌ Erro ao enviar. Verifique sua conexão e tente novamente.');
+  }
+}
+ 
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+ 
+document.getElementById('progress-fill').style.width = `${(1/totalSteps)*100}%`;
+</script>
+</body>
+</html>
