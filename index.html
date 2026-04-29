@@ -851,7 +851,7 @@ function fileToBase64(file) {
       data: reader.result.split(',')[1]
     });
     reader.onerror = reject;
-    reader.readAsDataURL(file);
+    reader.readAsData(file);
   });
 }
  
@@ -897,7 +897,7 @@ function buildSummary() {
   document.getElementById('summary-content').innerHTML = html;
 }
  
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBwcDibLs51zpAx-TglWak8n-8uwIN-dVDtmj-I5sAAr8JuUGr-JPsmH0TdIoEpHHNcg/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbcjgrOlpJK7bcMYQSF_8C84luc9GK8JmyIvFSvwJGYD8QTOPdYs2OD4RkXkU79nuAdQ/exec';
 
 async function postJSON(payload) {
   await fetch(APPS_SCRIPT_URL, {
