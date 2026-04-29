@@ -416,7 +416,7 @@
       <div class="grid grid-2">
         <div class="field">
           <label>CNPJ <span class="req">*</span></label>
-          <input type="text" id="cnpj" placeholder="00.000.000/0000-00" oninput="maskCNPJ(this)" maxlength="18">
+          <input type="text" id="cnpj" placeholder="00.000.000/0000-00" oninput="maskCNPJ(this)" onblur="onBlurCNPJ(this)" maxlength="18">
         </div>
         <div class="field">
           <label>Razão Social <span class="req">*</span></label>
@@ -545,7 +545,7 @@
         </div>
         <div class="field">
           <label>CPF <span class="req">*</span></label>
-          <input type="text" id="cpf_resp" placeholder="000.000.000-00" oninput="maskCPF(this)" maxlength="14">
+          <input type="text" id="cpf_resp" placeholder="000.000.000-00" oninput="maskCPF(this)" onblur="onBlurCPF(this)" maxlength="14">
         </div>
         <div class="field">
           <label>E-mail <span class="req">*</span></label>
@@ -567,7 +567,7 @@
         </div>
         <div class="field">
           <label>CPF <span class="req">*</span></label>
-          <input type="text" id="pf_cpf" placeholder="000.000.000-00" oninput="maskCPF(this)" maxlength="14">
+          <input type="text" id="pf_cpf" placeholder="000.000.000-00" oninput="maskCPF(this)" onblur="onBlurCPF(this)" maxlength="14">
         </div>
         <div class="field">
           <label>Celular <span class="req">*</span></label>
@@ -676,45 +676,45 @@
       <div class="grid grid-2">
         <div class="field">
           <label>CRO do Responsável Técnico <span class="req">*</span></label>
-          <div class="file-upload" id="wrap-cro" onclick="this.querySelector('input').click()">
+          <label class="file-upload" id="wrap-cro" for="file_cro">
             <div class="icon">📋</div>
             <div class="label">Clique para enviar</div>
             <div class="sub">PDF, JPG ou PNG • Máx. 10MB</div>
             <input type="file" id="file_cro" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFile(this,'wrap-cro','name-cro')">
-          </div>
+          </label>
           <div class="file-name" id="name-cro"></div>
         </div>
  
         <div class="field">
           <label>Comprovante de Conta Corrente <span class="req">*</span></label>
-          <div class="file-upload" id="wrap-conta" onclick="this.querySelector('input').click()">
+          <label class="file-upload" id="wrap-conta" for="file_conta">
             <div class="icon">🏦</div>
             <div class="label">Clique para enviar</div>
             <div class="sub">PDF, JPG ou PNG • Máx. 10MB</div>
             <input type="file" id="file_conta" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFile(this,'wrap-conta','name-conta')">
-          </div>
+          </label>
           <div class="file-name" id="name-conta"></div>
         </div>
  
         <div class="field">
           <label>Comprovante de Endereço <span class="req">*</span></label>
-          <div class="file-upload" id="wrap-end" onclick="this.querySelector('input').click()">
+          <label class="file-upload" id="wrap-end" for="file_end">
             <div class="icon">🏠</div>
             <div class="label">Clique para enviar</div>
             <div class="sub">PDF, JPG ou PNG • Máx. 10MB</div>
             <input type="file" id="file_end" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFile(this,'wrap-end','name-end')">
-          </div>
+          </label>
           <div class="file-name" id="name-end"></div>
         </div>
  
         <div class="field">
           <label>Foto da Fachada <span class="req">*</span></label>
-          <div class="file-upload" id="wrap-fachada" onclick="this.querySelector('input').click()">
+          <label class="file-upload" id="wrap-fachada" for="file_fachada">
             <div class="icon">📸</div>
             <div class="label">Clique para enviar</div>
             <div class="sub">JPG ou PNG • Máx. 10MB</div>
             <input type="file" id="file_fachada" accept=".jpg,.jpeg,.png" onchange="handleFile(this,'wrap-fachada','name-fachada')">
-          </div>
+          </label>
           <div class="file-name" id="name-fachada"></div>
         </div>
       </div>
@@ -784,8 +784,151 @@ function goTo(step) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
  
-function nextStep() { if (currentStep < totalSteps - 1) goTo(currentStep + 1); }
+function nextStep() {
+  // ---- Etapa 1: Dados da Clínica ----
+  if (currentStep === 0) {
+    const obrigatorios = [
+      { id: 'cnpj',            msg: 'CNPJ é obrigatório.' },
+      { id: 'razao_social',    msg: 'Razão Social é obrigatória.' },
+      { id: 'nome_clinica',    msg: 'Nome da Clínica é obrigatório.' },
+      { id: 'unidade',         msg: 'Unidade é obrigatória.' },
+      { id: 'email_clinica',   msg: 'E-mail da Clínica é obrigatório.' },
+      { id: 'telefone_clinica',msg: 'Telefone da Clínica é obrigatório.' },
+      { id: 'tipo_clinica',    msg: 'Tipo de Clínica é obrigatório.' },
+      { id: 'faturamento',     msg: 'Faturamento é obrigatório.' },
+    ];
+    for (const c of obrigatorios) {
+      if (!v(c.id)) { showFieldError(c.id, c.msg); return; }
+    }
+    if (!validarCNPJ(v('cnpj'))) { showFieldError('cnpj', 'CNPJ inválido. Verifique o número digitado.'); return; }
+  }
+
+  // ---- Etapa 2: Endereço ----
+  if (currentStep === 1) {
+    const obrigatorios = [
+      { id: 'cep',       msg: 'CEP é obrigatório.' },
+      { id: 'logradouro',msg: 'Logradouro é obrigatório.' },
+      { id: 'numero',    msg: 'Número é obrigatório.' },
+      { id: 'bairro',    msg: 'Bairro é obrigatório.' },
+      { id: 'cidade',    msg: 'Cidade é obrigatória.' },
+      { id: 'estado',    msg: 'Estado é obrigatório.' },
+    ];
+    for (const c of obrigatorios) {
+      if (!v(c.id)) { showFieldError(c.id, c.msg); return; }
+    }
+  }
+
+  // ---- Etapa 3: Responsável ----
+  if (currentStep === 2) {
+    const obrigatorios = [
+      { id: 'nome_resp',     msg: 'Nome do Responsável é obrigatório.' },
+      { id: 'sobrenome_resp',msg: 'Sobrenome do Responsável é obrigatório.' },
+      { id: 'cpf_resp',      msg: 'CPF do Responsável é obrigatório.' },
+      { id: 'email_resp',    msg: 'E-mail do Responsável é obrigatório.' },
+      { id: 'pf_nome',       msg: 'Nome do Ponto Focal é obrigatório.' },
+      { id: 'pf_cargo',      msg: 'Cargo do Ponto Focal é obrigatório.' },
+      { id: 'pf_cpf',        msg: 'CPF do Ponto Focal é obrigatório.' },
+      { id: 'pf_celular',    msg: 'Celular do Ponto Focal é obrigatório.' },
+      { id: 'pf_email',      msg: 'E-mail do Ponto Focal é obrigatório.' },
+      { id: 'num_cro',       msg: 'Nº do CRO é obrigatório.' },
+      { id: 'data_cro',      msg: 'Data de emissão do CRO é obrigatória.' },
+    ];
+    for (const c of obrigatorios) {
+      if (!v(c.id)) { showFieldError(c.id, c.msg); return; }
+    }
+    if (!validarCPF(v('cpf_resp'))) { showFieldError('cpf_resp', 'CPF do responsável inválido.'); return; }
+    if (!validarCPF(v('pf_cpf')))   { showFieldError('pf_cpf',   'CPF do ponto focal inválido.'); return; }
+  }
+
+  // ---- Etapa 4: Banco ----
+  if (currentStep === 3) {
+    const obrigatorios = [
+      { id: 'banco',       msg: 'Banco é obrigatório.' },
+      { id: 'agencia',     msg: 'Agência é obrigatória.' },
+      { id: 'conta_num',   msg: 'Número da Conta é obrigatório.' },
+      { id: 'conta_digito',msg: 'Dígito da Conta é obrigatório.' },
+      { id: 'tipo_conta',  msg: 'Tipo de Conta é obrigatório.' },
+    ];
+    for (const c of obrigatorios) {
+      if (!v(c.id)) { showFieldError(c.id, c.msg); return; }
+    }
+  }
+
+  // ---- Etapa 5: Documentos ----
+  if (currentStep === 4) {
+    const docs = [
+      { id: 'file_cro',     wrap: 'wrap-cro',     msg: 'Anexe o CRO do Responsável Técnico.' },
+      { id: 'file_conta',   wrap: 'wrap-conta',   msg: 'Anexe o Comprovante de Conta Corrente.' },
+      { id: 'file_end',     wrap: 'wrap-end',     msg: 'Anexe o Comprovante de Endereço.' },
+      { id: 'file_fachada', wrap: 'wrap-fachada', msg: 'Anexe a Foto da Fachada.' },
+    ];
+    for (const d of docs) {
+      if (!document.getElementById(d.id).files[0]) {
+        document.getElementById(d.wrap).style.borderColor = 'var(--error)';
+        showToast('❌ ' + d.msg);
+        return;
+      }
+    }
+  }
+
+  if (currentStep < totalSteps - 1) goTo(currentStep + 1);
+}
 function prevStep() { if (currentStep > 0) goTo(currentStep - 1); }
+
+// --- Validação CNPJ ---
+function validarCNPJ(cnpj) {
+  const n = cnpj.replace(/\D/g, '');
+  if (n.length !== 14) return false;
+  if (/^(\d)\1+$/.test(n)) return false; // todos iguais
+  const calc = (x) => {
+    let s = 0, p = x === 12 ? 5 : 6;
+    for (let i = 0; i < x; i++) {
+      s += parseInt(n[i]) * p--;
+      if (p < 2) p = 9;
+    }
+    const r = s % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  return calc(12) === parseInt(n[12]) && calc(13) === parseInt(n[13]);
+}
+
+// --- Validação CPF ---
+function validarCPF(cpf) {
+  const n = cpf.replace(/\D/g, '');
+  if (n.length !== 11) return false;
+  if (/^(\d)\1+$/.test(n)) return false; // todos iguais
+  const calc = (x) => {
+    let s = 0;
+    for (let i = 0; i < x; i++) s += parseInt(n[i]) * (x + 1 - i);
+    const r = (s * 10) % 11;
+    return r === 10 || r === 11 ? 0 : r;
+  };
+  return calc(9) === parseInt(n[9]) && calc(10) === parseInt(n[10]);
+}
+
+// --- Exibe erro em campo específico ---
+function showFieldError(fieldId, msg) {
+  const el = document.getElementById(fieldId);
+  el.classList.add('error');
+  el.focus();
+  // Remove erro ao digitar novamente
+  el.addEventListener('input', () => el.classList.remove('error'), { once: true });
+  showToast('❌ ' + msg);
+}
+
+// --- Valida CNPJ ao sair do campo ---
+function onBlurCNPJ(el) {
+  if (el.value && !validarCNPJ(el.value)) {
+    showFieldError('cnpj', 'CNPJ inválido. Verifique o número digitado.');
+  }
+}
+
+// --- Valida CPF ao sair do campo ---
+function onBlurCPF(el) {
+  if (el.value && !validarCPF(el.value)) {
+    showFieldError(el.id, 'CPF inválido. Verifique o número digitado.');
+  }
+}
  
 function maskCNPJ(el) {
   let v = el.value.replace(/\D/g,'');
