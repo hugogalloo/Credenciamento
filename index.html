@@ -851,7 +851,7 @@ function fileToBase64(file) {
       data: reader.result.split(',')[1]
     });
     reader.onerror = reject;
-    reader.readAsData(file);
+    reader.readAsDataURL(file);
   });
 }
  
@@ -897,28 +897,23 @@ function buildSummary() {
   document.getElementById('summary-content').innerHTML = html;
 }
  
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbcjgrOlpJK7bcMYQSF_8C84luc9GK8JmyIvFSvwJGYD8QTOPdYs2OD4RkXkU79nuAdQ/exec';
-
-async function postJSON(payload) {
-  await fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-}
-
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxle-cHLwITEBlh2wIR1L2UQneQShaw22umDrjykf6unE1ucODnr2j-mP9e627RU0U_5g/exec';
+ 
 async function submitForm() {
   document.getElementById('overlay').classList.add('show');
-  document.querySelector('.overlay-box p').textContent = 'Enviando dados do cadastro...';
+  document.querySelector('.overlay-box p').textContent = 'Convertendo arquivos, aguarde...';
 
-  const clinica = v('nome_clinica') || v('cnpj') || 'sem-nome';
-  const dataEnvio = new Date().toLocaleString('pt-BR');
+  // Converter todos os arquivos para base64
+  const [fileCro, fileConta, fileEnd, fileFachada] = await Promise.all([
+    fileToBase64(document.getElementById('file_cro').files[0]),
+    fileToBase64(document.getElementById('file_conta').files[0]),
+    fileToBase64(document.getElementById('file_end').files[0]),
+    fileToBase64(document.getElementById('file_fachada').files[0]),
+  ]);
 
-  // Dados textuais — enviados primeiro, criam a linha na planilha
-  const dadosTexto = {
-    action: 'salvar_dados',
-    clinica_key: clinica,
+  document.querySelector('.overlay-box p').textContent = 'Enviando dados e arquivos...';
+
+  const payload = {
     'CNPJ': v('cnpj'),
     'Ag': v('agencia'),
     'Dígito ag': v('digito_ag'),
@@ -932,7 +927,7 @@ async function submitForm() {
     'CEP': v('cep'),
     'Cidade': v('cidade'),
     'Estado (UF)': v('estado'),
-    'Nome da clinica': clinica,
+    'Nome da clinica': v('nome_clinica'),
     'Email da clinica': v('email_clinica'),
     'Telefone da clinica': v('telefone_clinica'),
     'Unidade (Ex: Centro)': v('unidade'),
@@ -952,44 +947,28 @@ async function submitForm() {
     'Rede': v('rede'),
     'Nº do CRO': v('num_cro'),
     'Data emissão do CRO': v('data_cro'),
-    'Data de envio': dataEnvio,
+    'Data de envio': new Date().toLocaleString('pt-BR'),
+    // Arquivos em base64
+    'file_cro': fileCro,
+    'file_conta': fileConta,
+    'file_end': fileEnd,
+    'file_fachada': fileFachada,
   };
-
+ 
   try {
-    // 1. Envia dados textuais
-    await postJSON(dadosTexto);
-
-    // 2. Envia cada arquivo separadamente
-    const arquivos = [
-      { id: 'file_cro',     campo: 'file_cro' },
-      { id: 'file_conta',   campo: 'file_conta' },
-      { id: 'file_end',     campo: 'file_end' },
-      { id: 'file_fachada', campo: 'file_fachada' },
-    ];
-
-    for (let i = 0; i < arquivos.length; i++) {
-      const arq = arquivos[i];
-      const fileEl = document.getElementById(arq.id);
-      if (!fileEl.files[0]) continue;
-
-      document.querySelector('.overlay-box p').textContent =
-        `Enviando arquivo ${i + 1} de ${arquivos.filter(a => document.getElementById(a.id).files[0]).length}...`;
-
-      const fileB64 = await fileToBase64(fileEl.files[0]);
-      await postJSON({
-        action: 'salvar_arquivo',
-        clinica_key: clinica,
-        campo: arq.campo,
-        file: fileB64,
-      });
-    }
-
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+ 
     document.getElementById('overlay').classList.remove('show');
     document.querySelector('.steps-nav').style.display = 'none';
     document.getElementById('sec-5').classList.remove('active');
     document.getElementById('success-screen').classList.add('show');
     document.querySelector('header p').textContent = 'Cadastro concluído com sucesso';
-
+ 
   } catch(err) {
     document.getElementById('overlay').classList.remove('show');
     showToast('❌ Erro ao enviar. Verifique sua conexão e tente novamente.');
