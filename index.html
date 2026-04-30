@@ -444,6 +444,9 @@
             <option value="">Selecione...</option>
             <option>Clínica Própria</option>
             <option>Franquia</option>
+            <option>Rede</option>
+            <option>Consultório</option>
+            <option>Hospital</option>
           </select>
         </div>
         <div class="field">
@@ -782,95 +785,80 @@ function goTo(step) {
 }
  
 function nextStep() {
-  // ---- Etapa 1: Dados da Clínica ----
-  if (currentStep === 0) {
-    const obrigatorios = [
-      { id: 'cnpj',            msg: 'CNPJ é obrigatório.' },
-      { id: 'razao_social',    msg: 'Razão Social é obrigatória.' },
-      { id: 'nome_clinica',    msg: 'Nome da Clínica é obrigatório.' },
-      { id: 'unidade',         msg: 'Unidade é obrigatória.' },
-      { id: 'email_clinica',   msg: 'E-mail da Clínica é obrigatório.' },
-      { id: 'telefone_clinica',msg: 'Telefone da Clínica é obrigatório.' },
-      { id: 'tipo_clinica',    msg: 'Tipo de Clínica é obrigatório.' },
-      { id: 'faturamento',     msg: 'Faturamento é obrigatório.' },
-    ];
-    for (const c of obrigatorios) {
-      if (!v(c.id)) { showFieldError(c.id, c.msg); return; }
-    }
-    if (!validarCNPJ(v('cnpj'))) { showFieldError('cnpj', 'CNPJ inválido. Verifique o número digitado.'); return; }
-  }
-
-  // ---- Etapa 2: Endereço ----
-  if (currentStep === 1) {
-    const obrigatorios = [
-      { id: 'cep',       msg: 'CEP é obrigatório.' },
-      { id: 'logradouro',msg: 'Logradouro é obrigatório.' },
-      { id: 'numero',    msg: 'Número é obrigatório.' },
-      { id: 'bairro',    msg: 'Bairro é obrigatório.' },
-      { id: 'cidade',    msg: 'Cidade é obrigatória.' },
-      { id: 'estado',    msg: 'Estado é obrigatório.' },
-    ];
-    for (const c of obrigatorios) {
-      if (!v(c.id)) { showFieldError(c.id, c.msg); return; }
-    }
-  }
-
-  // ---- Etapa 3: Responsável ----
-  if (currentStep === 2) {
-    const obrigatorios = [
-      { id: 'nome_resp',     msg: 'Nome do Responsável é obrigatório.' },
-      { id: 'sobrenome_resp',msg: 'Sobrenome do Responsável é obrigatório.' },
-      { id: 'cpf_resp',      msg: 'CPF do Responsável é obrigatório.' },
-      { id: 'email_resp',    msg: 'E-mail do Responsável é obrigatório.' },
-      { id: 'pf_nome',       msg: 'Nome do Ponto Focal é obrigatório.' },
-      { id: 'pf_cargo',      msg: 'Cargo do Ponto Focal é obrigatório.' },
-      { id: 'pf_cpf',        msg: 'CPF do Ponto Focal é obrigatório.' },
-      { id: 'pf_celular',    msg: 'Celular do Ponto Focal é obrigatório.' },
-      { id: 'pf_email',      msg: 'E-mail do Ponto Focal é obrigatório.' },
-      { id: 'num_cro',       msg: 'Nº do CRO é obrigatório.' },
-      { id: 'data_cro',      msg: 'Data de emissão do CRO é obrigatória.' },
-    ];
-    for (const c of obrigatorios) {
-      if (!v(c.id)) { showFieldError(c.id, c.msg); return; }
-    }
-    if (!validarCPF(v('cpf_resp'))) { showFieldError('cpf_resp', 'CPF do responsável inválido.'); return; }
-    if (!validarCPF(v('pf_cpf')))   { showFieldError('pf_cpf',   'CPF do ponto focal inválido.'); return; }
-  }
-
-  // ---- Etapa 4: Banco ----
-  if (currentStep === 3) {
-    const obrigatorios = [
-      { id: 'banco',       msg: 'Banco é obrigatório.' },
-      { id: 'agencia',     msg: 'Agência é obrigatória.' },
-      { id: 'conta_num',   msg: 'Número da Conta é obrigatório.' },
-      { id: 'conta_digito',msg: 'Dígito da Conta é obrigatório.' },
-      { id: 'tipo_conta',  msg: 'Tipo de Conta é obrigatório.' },
-    ];
-    for (const c of obrigatorios) {
-      if (!v(c.id)) { showFieldError(c.id, c.msg); return; }
-    }
-  }
-
-  // ---- Etapa 5: Documentos ----
-  if (currentStep === 4) {
-    const docs = [
-      { id: 'file_cro',     wrap: 'wrap-cro',     msg: 'Anexe o CRO do Responsável Técnico.' },
-      { id: 'file_conta',   wrap: 'wrap-conta',   msg: 'Anexe o Comprovante de Conta Corrente.' },
-      { id: 'file_end',     wrap: 'wrap-end',     msg: 'Anexe o Comprovante de Endereço.' },
-      { id: 'file_fachada', wrap: 'wrap-fachada', msg: 'Anexe a Foto da Fachada.' },
-    ];
-    for (const d of docs) {
-      if (!document.getElementById(d.id).files[0]) {
-        document.getElementById(d.wrap).style.borderColor = 'var(--error)';
-        showToast('❌ ' + d.msg);
-        return;
-      }
-    }
-  }
-
   if (currentStep < totalSteps - 1) goTo(currentStep + 1);
 }
 function prevStep() { if (currentStep > 0) goTo(currentStep - 1); }
+
+// --- Validação completa antes do envio ---
+function validarTudo() {
+  const erros = [];
+
+  // Etapa 1 — Clínica
+  const step1 = [
+    { id: 'cnpj',             msg: 'CNPJ é obrigatório.' },
+    { id: 'razao_social',     msg: 'Razão Social é obrigatória.' },
+    { id: 'nome_clinica',     msg: 'Nome da Clínica é obrigatório.' },
+    { id: 'unidade',          msg: 'Unidade é obrigatória.' },
+    { id: 'email_clinica',    msg: 'E-mail da Clínica é obrigatório.' },
+    { id: 'telefone_clinica', msg: 'Telefone da Clínica é obrigatório.' },
+    { id: 'tipo_clinica',     msg: 'Tipo de Clínica é obrigatório.' },
+    { id: 'faturamento',      msg: 'Faturamento é obrigatório.' },
+  ];
+  for (const c of step1) { if (!v(c.id)) erros.push({ ...c, step: 0 }); }
+  if (v('cnpj') && !validarCNPJ(v('cnpj'))) erros.push({ id: 'cnpj', msg: 'CNPJ inválido.', step: 0 });
+
+  // Etapa 2 — Endereço
+  const step2 = [
+    { id: 'cep',        msg: 'CEP é obrigatório.' },
+    { id: 'logradouro', msg: 'Logradouro é obrigatório.' },
+    { id: 'numero',     msg: 'Número é obrigatório.' },
+    { id: 'bairro',     msg: 'Bairro é obrigatório.' },
+    { id: 'cidade',     msg: 'Cidade é obrigatória.' },
+    { id: 'estado',     msg: 'Estado é obrigatório.' },
+  ];
+  for (const c of step2) { if (!v(c.id)) erros.push({ ...c, step: 1 }); }
+
+  // Etapa 3 — Responsável
+  const step3 = [
+    { id: 'nome_resp',      msg: 'Nome do Responsável é obrigatório.' },
+    { id: 'sobrenome_resp', msg: 'Sobrenome do Responsável é obrigatório.' },
+    { id: 'cpf_resp',       msg: 'CPF do Responsável é obrigatório.' },
+    { id: 'email_resp',     msg: 'E-mail do Responsável é obrigatório.' },
+    { id: 'pf_nome',        msg: 'Nome do Ponto Focal é obrigatório.' },
+    { id: 'pf_cargo',       msg: 'Cargo do Ponto Focal é obrigatório.' },
+    { id: 'pf_cpf',         msg: 'CPF do Ponto Focal é obrigatório.' },
+    { id: 'pf_celular',     msg: 'Celular do Ponto Focal é obrigatório.' },
+    { id: 'pf_email',       msg: 'E-mail do Ponto Focal é obrigatório.' },
+    { id: 'num_cro',        msg: 'Nº do CRO é obrigatório.' },
+    { id: 'data_cro',       msg: 'Data de emissão do CRO é obrigatória.' },
+  ];
+  for (const c of step3) { if (!v(c.id)) erros.push({ ...c, step: 2 }); }
+  if (v('cpf_resp') && !validarCPF(v('cpf_resp'))) erros.push({ id: 'cpf_resp', msg: 'CPF do responsável inválido.', step: 2 });
+  if (v('pf_cpf')   && !validarCPF(v('pf_cpf')))   erros.push({ id: 'pf_cpf',   msg: 'CPF do ponto focal inválido.',  step: 2 });
+
+  // Etapa 4 — Banco
+  const step4 = [
+    { id: 'banco',        msg: 'Banco é obrigatório.' },
+    { id: 'agencia',      msg: 'Agência é obrigatória.' },
+    { id: 'conta_num',    msg: 'Número da Conta é obrigatório.' },
+    { id: 'conta_digito', msg: 'Dígito da Conta é obrigatório.' },
+    { id: 'tipo_conta',   msg: 'Tipo de Conta é obrigatório.' },
+  ];
+  for (const c of step4) { if (!v(c.id)) erros.push({ ...c, step: 3 }); }
+
+  // Etapa 5 — Documentos
+  const step5 = [
+    { id: 'file_cro',     wrap: 'wrap-cro',     msg: 'CRO do Responsável Técnico é obrigatório.', step: 4 },
+    { id: 'file_conta',   wrap: 'wrap-conta',   msg: 'Comprovante de Conta é obrigatório.',        step: 4 },
+    { id: 'file_end',     wrap: 'wrap-end',     msg: 'Comprovante de Endereço é obrigatório.',     step: 4 },
+    { id: 'file_fachada', wrap: 'wrap-fachada', msg: 'Foto da Fachada é obrigatória.',             step: 4 },
+  ];
+  for (const d of step5) {
+    if (!document.getElementById(d.id).files[0]) erros.push(d);
+  }
+
+  return erros;
+}
 
 // --- Validação CNPJ ---
 function validarCNPJ(cnpj) {
@@ -1054,6 +1042,24 @@ async function postJSON(payload) {
 }
 
 async function submitForm() {
+  // Validar tudo antes de enviar
+  const erros = validarTudo();
+  if (erros.length > 0) {
+    const primeiro = erros[0];
+    // Navega para a etapa com erro e destaca o campo
+    goTo(primeiro.step);
+    setTimeout(() => {
+      if (primeiro.wrap) {
+        // Campo de arquivo
+        document.getElementById(primeiro.wrap).style.borderColor = 'var(--error)';
+        showToast('❌ ' + primeiro.msg);
+      } else {
+        showFieldError(primeiro.id, primeiro.msg);
+      }
+    }, 300);
+    return;
+  }
+
   document.getElementById('overlay').classList.add('show');
   document.querySelector('.overlay-box p').textContent = 'Enviando dados do cadastro...';
 
